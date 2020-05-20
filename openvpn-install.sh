@@ -160,9 +160,16 @@ prefetch: yes' >>/etc/unbound/unbound.conf
 	prefetch: yes' >/etc/unbound/unbound.conf
 		fi
 
+		# IPv6 DNS for all OS
+		if [[ $IPV6_SUPPORT == 'y' ]]; then
+			echo 'interface: fd42:42:42:42::1
+access-control: fd42:42:42:42::/112 allow' >>/etc/unbound/unbound.conf
+		fi
+
 		if [[ ! $OS =~ (fedora|centos|amzn) ]]; then
 			# DNS Rebinding fix
 			echo "private-address: 10.0.0.0/8
+private-address: fd42:42:42:42::/112
 private-address: 172.16.0.0/12
 private-address: 192.168.0.0/16
 private-address: 169.254.0.0/16
@@ -183,6 +190,7 @@ hide-version: yes
 use-caps-for-id: yes
 prefetch: yes
 private-address: 10.0.0.0/8
+private-address: fd42:42:42:42::/112
 private-address: 172.16.0.0/12
 private-address: 192.168.0.0/16
 private-address: 169.254.0.0/16
@@ -190,6 +198,10 @@ private-address: fd00::/8
 private-address: fe80::/10
 private-address: 127.0.0.0/8
 private-address: ::ffff:0:0/96' >/etc/unbound/openvpn.conf
+		if [[ $IPV6_SUPPORT == 'y' ]]; then
+			echo 'interface: fd42:42:42:42::1
+access-control: fd42:42:42:42::/112 allow' >>/etc/unbound/openvpn.conf
+		fi
 	fi
 
 	systemctl enable unbound
@@ -786,6 +798,9 @@ ifconfig-pool-persist ipp.txt" >>/etc/openvpn/server.conf
 		;;
 	2) # Self-hosted DNS resolver (Unbound)
 		echo 'push "dhcp-option DNS 10.8.0.1"' >>/etc/openvpn/server.conf
+		if [[ $IPV6_SUPPORT == 'y' ]]; then
+			echo 'push "dhcp-option DNS fd42:42:42:42::1"' >>/etc/openvpn/server.conf
+		fi
 		;;
 	3) # Cloudflare
 		echo 'push "dhcp-option DNS 1.0.0.1"' >>/etc/openvpn/server.conf
@@ -956,7 +971,8 @@ iptables -I INPUT 1 -i $NIC -p $PROTOCOL --dport $PORT -j ACCEPT" >/etc/iptables
 		echo "ip6tables -t nat -I POSTROUTING 1 -s fd42:42:42:42::/112 -o $NIC -j MASQUERADE
 ip6tables -I INPUT 1 -i tun0 -j ACCEPT
 ip6tables -I FORWARD 1 -i $NIC -o tun0 -j ACCEPT
-ip6tables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT" >>/etc/iptables/add-openvpn-rules.sh
+ip6tables -I FORWARD 1 -i tun0 -o $NIC -j ACCEPT
+ip6tables -I INPUT 1 -i $NIC -p $PROTOCOL --dport $PORT -j ACCEPT" >>/etc/iptables/add-openvpn-rules.sh
 	fi
 
 	# Script to remove rules
@@ -971,7 +987,8 @@ iptables -D INPUT -i $NIC -p $PROTOCOL --dport $PORT -j ACCEPT" >/etc/iptables/r
 		echo "ip6tables -t nat -D POSTROUTING -s fd42:42:42:42::/112 -o $NIC -j MASQUERADE
 ip6tables -D INPUT -i tun0 -j ACCEPT
 ip6tables -D FORWARD -i $NIC -o tun0 -j ACCEPT
-ip6tables -D FORWARD -i tun0 -o $NIC -j ACCEPT" >>/etc/iptables/rm-openvpn-rules.sh
+ip6tables -D FORWARD -i tun0 -o $NIC -j ACCEPT
+ip6tables -D INPUT -i $NIC -p $PROTOCOL --dport $PORT -j ACCEPT" >>/etc/iptables/rm-openvpn-rules.sh
 	fi
 
 	chmod +x /etc/iptables/add-openvpn-rules.sh
