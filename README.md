@@ -1,49 +1,47 @@
 # openvpn-install
 
-![Test](https://github.com/angristan/openvpn-install/workflows/Test/badge.svg) ![Lint](https://github.com/angristan/openvpn-install/workflows/Lint/badge.svg)
+このドキュメントは、openvpn-installのフォーク元であるangristan氏の[README.md](https://github.com/angristan/openvpn-install/blob/master/README.md) を翻訳したもので、一部内容は本プロジェクトに合せて改訂されています。翻訳内容の保証はしておりませんのであらかじめご了承ください。
 
-OpenVPN installer for Debian, Ubuntu, Fedora, CentOS and Arch Linux.
+------
 
-This script will let you setup your own secure VPN server in just a few seconds.
+openvpn-installは、Debian、Ubuntu、Fedora、CentOS及びArch Linuxで動作するOpenVPNインストーラです。本スクリプトを使用することにより、手軽にセキュアなVPNサーバをセットアップすることができます。
 
-You can also check out [wireguard-install](https://github.com/angristan/wireguard-install), a simple installer for a simpler, safer, faster and more modern VPN protocol.
+## 使い方
 
-## Usage
-
-First, get the script and make it executable:
+初めにスクリプトをダウンロードし、実行可能にします。
 
 ```bash
-curl -O https://raw.githubusercontent.com/angristan/openvpn-install/master/openvpn-install.sh
+curl -O https://raw.githubusercontent.com/plum-systems/openvpn-install/master/openvpn-install.sh
 chmod +x openvpn-install.sh
 ```
 
-Then run it:
+次にスクリプトを実行します。
 
 ```sh
 ./openvpn-install.sh
 ```
 
-You need to run the script as root and have the TUN module enabled.
+スクリプトは、rootユーザで実行する必要があります。また、TUNモジュールが有効になっている必要があります。
 
-The first time you run it, you'll have to follow the assistant and answer a few questions to setup your VPN server.
+初めて実行するときは、ウィザードに従っていくつかの質問に答え、VPNサーバをセットアップします。すでにOpenVPNがセットアップされている場合、スクリプトを再び実行すると、次の選択肢を選ぶことができます。
 
-When OpenVPN is installed, you can run the script again, and you will get the choice to:
+- クライアントの追加
+- クライアントの削除
+- OpenVPNのアンインストール
 
-- Add a client
-- Remove a client
-- Uninstall OpenVPN
+ホームディレクトリには、クライアント設定ファイル（`.ovpn`）があります。 これらを サーバからダウンロードし、OpenVPNクライアントを使用して接続します。
 
-In your home directory, you will have `.ovpn` files. These are the client configuration files. Download them from your server and connect using your favorite OpenVPN client.
 
-If you have any question, head to the [FAQ](#faq) first. Please read everything before opening an issue.
 
-**PLEASE do net send me emails or private messages asking for help.** The only place to get help is the issues. Other people may be able to help and in the future, other users may also run into the same issue as you. My time is not available for free just for you, you're not special.
+質問がある場合は、まず[FAQ](#faq)に進んでください。 [Issues](https://github.com/issues) に登録する前にすべてをお読みください。
 
-### Headless install
+**メールでの個別の問い合わせにはお答えしておりませんのでご了承ください。** 質問がある場合は [Issues](https://github.com/issues) をご利用ください。他のユーザが答えてくれるかもしれません。 [Issues](https://github.com/issues) を利用するなら、将来、他のユーザも同じ問題に遭遇する際に役立つ場合もあります。
 
-It's also possible to run the script headless, e.g. without waiting for user input, in an automated manner.
+### ヘッドレスインストール
 
-Example usage:
+スクリプトをヘッドレスで実行することで、ウィザードによるユーザ入力を待つことなく、自動的にセットアップすることもできます。
+
+使用例:
 
 ```bash
 AUTO_INSTALL=y ./openvpn-install.sh
@@ -54,9 +52,9 @@ export AUTO_INSTALL=y
 ./openvpn-install.sh
 ```
 
-A default set of variables will then be set, by passing the need for user input.
+ヘッドレスインストールでは、ユーザ入力の代わりに、デフォルトで設定された変数がパラメータとして渡されます。
 
-If you want to customise your installation, you can export them or specify them on the same line, as shown above.
+変数をカスタマイズしたい場合は、上記のように同じ行に指定するか、変数を `export` することができます。
 
 - `APPROVE_INSTALL=y`
 - `APPROVE_IP=y`
@@ -69,19 +67,19 @@ If you want to customise your installation, you can export them or specify them 
 - `CLIENT=clientname`
 - `PASS=1`
 
-If the server is behind NAT, you can specify its endpoint with the `ENDPOINT` variable. If the endpoint is the public IP address which it is behind, you can use `ENDPOINT=$(curl -4 ifconfig.co)` (the script will default to this). The endpoint can be an IPv4 or a domain.
+サーバがNATの背後にある場合は、 `ENDPOINT` 変数を使用してエンドポイントを指定できます。エンドポイントがグルーバルIPアドレスなら、 `ENDPOINT=$(curl -4 ifconfig.co)` を使用できます（スクリプトのデフォルト）。また、エンドポイントは、IPv4またはドメインで指定することができます。
 
-Other variables can be set depending on your choice (encryption, compression). You can search for them in the `installQuestions()` function of the script.
+その他の変数は、選択に応じて設定できます（暗号化、圧縮）。変数はスクリプトの `installQuestions()` 関数で検索できます。
 
-Password-protected clients are not supported by the headless installation method since user input is expected by Easy-RSA.
+本スクリプトではEasy RSAを使用していますが、Easy RSAはユーザ入力を想定しているため、ヘッドレスインストールではパスワード付きのクライアント証明書の発行はサポートされません。
 
-The headless install is more-or-less idempotent, in that it has been made safe to run multiple times with the same parameters, e.g. by a state provisioner like Ansible/Terraform/Salt/Chef/Puppet. It will only install and regenerate the Easy-RSA PKI if it doesn't already exist, and it will only install OpenVPN and other upstream dependencies if OpenVPN isn't already installed. It will recreate all local config and re-generate the client file on each headless run.
+ヘッドレスインストールは、Ansible / Terraform / Salt / Chef / Puppetなどの構成管理ツールを使用する場合を想定しており、同じパラメータで何回実行しても問題ありません。Easy RSAによるPKIが存在していない場合のみPKIが再構築されます。また、OpenVPNがインストールされていない場合のみ、OpenVPNおよび依存関係にあるパッケージをインストールします。ヘッドレスインストールを実行する度に、すべての設定ファイルは再作成され、クライアント設定ファイルも再生成されます。
 
-### Headless User Addition
+### ヘッドレスインストールでのユーザの追加
 
-It's also possible to automate the addition of a new user. Here, the key is to provide the (string) value of the `MENU_OPTION` variable along with the remaining mandatory variables before invoking the script.
+新しいユーザーの追加を自動化することもできます。 ここで重要なのは、スクリプトを呼び出す前に、 `MENU_OPTION` 変数（文字列）、およびその他の必須変数を設定することです。
 
-The following Bash script adds a new user `foo` to an existing OpenVPN configuration
+次のBashスクリプトは、OpenVPNの新しいユーザ `foo` を追加します。
 
 ```bash
 #!/bin/bash
@@ -91,27 +89,28 @@ export PASS="1"
 ./openvpn-install.sh
 ```
 
-## Features
+## 機能
 
-- Installs and configures a ready-to-use OpenVPN server
-- Iptables rules and forwarding managed in a seamless way
-- If needed, the script can cleanly remove OpenVPN, including configuration and iptables rules
-- Customisable encryption settings, enhanced default settings (see [Security and Encryption](#security-and-encryption) below)
-- OpenVPN 2.4 features, mainly encryption improvements (see [Security and Encryption](#security-and-encryption) below)
-- Variety of DNS resolvers to be pushed to the clients
-- Choice to use a self-hosted resolver with Unbound (supports already existing Unbound installations)
-- Choice between TCP and UDP
-- NATed IPv6 support
-- Compression disabled by default to prevent VORACLE. LZ4 (v1/v2) and LZ0 algorithms available otherwise.
-- Unprivileged mode: run as `nobody`/`nogroup`
-- Block DNS leaks on Windows 10
-- Randomised server certificate name
-- Choice to protect clients with a password (private key encryption)
-- Many other little things!
+- 手軽なOpenVPNサーバのインストールと設定
+- iptablesの自動設定
+- OpenVPNのアンインストールと設定の削除
+- 暗号化設定のカスタマイズ、及び強化されたデフォルト設定（以下の [セキュリティと暗号化](#セキュリティと暗号化) を参照）
+- OpenVPN 2.4に対応（主に暗号化の改善；以下の [セキュリティと暗号化](#セキュリティと暗号化) を参照）
+- 様々な種類のDNSサービスをクライアントにプッシュ可能
+- ローカルのUnboundを利用可能
+- TCP/UDPの選択
+- IPv6サポート
+- VORACLE攻撃に対応するためデフォルトで圧縮を無効化
+  ※圧縮アルゴリズムはLZ4（v1/v2）及びLZOに対応
+- 非特権モードでの実行（ `nobody` / ` nogroup` ）
+- Windows 10のDNSリークをブロック
+- サーバ証明書名のランダム化
+- パスワード付きクライアント証明書（秘密鍵暗号化）
+- その他
 
-## Compatibility
+## 互換性
 
-The script supports these OS and architectures:
+次のOSとアーキテクチャをサポートしています。
 
 |                 | i386 | amd64 | armhf | arm64 |
 | --------------- | ---- | ----- | ----- | ----- |
@@ -125,110 +124,105 @@ The script supports these OS and architectures:
 | Ubuntu 16.04    | ✅   | ✅    | ❌    | ❌    |
 | Ubuntu >= 18.04 | ❌   | ✅    | ✅    | ✅    |
 
-To be noted:
+注記:
 
-- It should work on Debian 8+ and Ubuntu 16.04+. But versions not in the table above are not officially supported.
-- The script requires `systemd`.
-- The script is regularly tested against `amd64` only.
+- Debian 8以降とUbuntu 16.04以降で動作します。 上記の表にないバージョンは正式にサポートされていません。
+- 本スクリプトの動作には  `systemd` が必要です。
+- 本スクリプトは `amd64` のみでテストされています。
 
-## Fork
+## フォーク
 
-This script is based on the great work of [Nyr and its contributors](https://github.com/Nyr/openvpn-install).
+本スクリプトは [Nyr氏を始めとする多くの貢献者](https://github.com/Nyr/openvpn-install) の成果をベースにしています。
 
-Since 2016, the two scripts have diverged and are not alike anymore, especially under the hood. The main goal of the script was enhanced security. But since then, the script has been completely rewritten and a lot a features have been added. The script is only compatible with recent distributions though, so if you need to use a very old server or client, I advise using Nyr's script.
+2016年に本スクリプトはフォークしましたが、内部は大幅に変わっています。 当初の目的はセキュリティの強化でしたが、それ以来、スクリプトは完全に書き直され、多くの機能が追加されました。 本スクリプトは最近のディストリビューションのみと互換性があるため、非常に古いサーバまたはクライアントを使用する必要がある場合は、Nyr氏のスクリプトを使用することをお勧めします。
 
 ## FAQ
 
-More Q&A in [FAQ.md](FAQ.md).
+詳しいQ&Aは [FAQ.md](FAQ.md) を参照してください。
 
-**Q:** Which provider do you recommend?
+**Q:** どのVPNプロバイダーを推奨しますか？
 
-**A:** I recommend these:
+**A:** 以下を推奨します。
 
-- [Vultr](https://goo.gl/Xyd1Sc): Worldwide locations, IPv6 support, starting at \$3.50/month
-- [PulseHeberg](https://goo.gl/76yqW5): France, unlimited bandwidth, starting at €3/month
-- [Digital Ocean](https://goo.gl/qXrNLK): Worldwide locations, IPv6 support, starting at \$5/month
-
----
-
-**Q:** Which OpenVPN client do you recommend?
-
-**A:** If possible, an official OpenVPN 2.4 client.
-
-- Windows: [The official OpenVPN community client](https://openvpn.net/index.php/download/community-downloads.html).
-- Linux: The `openvpn` package from your distribution. There is an [official APT repository](https://community.openvpn.net/openvpn/wiki/OpenvpnSoftwareRepos) for Debian/Ubuntu based distributions.
-- macOS: [Tunnelblick](https://tunnelblick.net/), [Viscosity](https://www.sparklabs.com/viscosity/).
-- Android: [OpenVPN for Android](https://play.google.com/store/apps/details?id=de.blinkt.openvpn).
-- iOS: [The official OpenVPN Connect client](https://itunes.apple.com/us/app/openvpn-connect/id590379981).
+- [Vultr](https://goo.gl/Xyd1Sc): 世界中のロケーション、IPv6サポート、$3.50/月から
+- [PulseHeberg](https://goo.gl/76yqW5): フランス、無制限の帯域幅、€3/月から
+- [Digital Ocean](https://goo.gl/qXrNLK): 世界中のロケーション、IPv6サポート、$5/月から
 
 ---
 
-**Q:** Am I safe from the NSA by using your script?
+**Q:** どのOpenVPNクライアントを推奨しますか？
 
-**A:** Please review your threat models. Even if this script has security in mind and uses state-of-the-art encryption, you shouldn't be using a VPN if you want to hide from the NSA.
+**A:** 可能なら、公式のOpenVPN 2.4 クライアントを使用してください。
+
+- Windows: [OpenVPN GUI（公式）](https://www.openvpn.jp/download/)、 [vpnux Client](http://www.plum-systems.co.jp/vpnux-client/)
+- Linux: `openvpn` パッケージ
+  ※Debian/Ubuntuベースのディストリビューション用の [公式APTリポジトリ](https://community.openvpn.net/openvpn/wiki/OpenvpnSoftwareRepos) もあります。
+- macOS: [Tunnelblick](https://tunnelblick.net/)、[Viscosity](https://www.sparklabs.com/viscosity/)
+- Android: [OpenVPN Coonect（公式）](https://play.google.com/store/apps/details?id=net.openvpn.openvpn)
+  - iOS: [OpenVPN Connect（公式）](https://itunes.apple.com/us/app/openvpn-connect/id590379981)
 
 ---
 
-**Q:** Is there an OpenVPN documentation?
+**Q:** このスクリプトはNSAから守ることができますか？
 
-**A:** Yes, please head to the [OpenVPN Manual](https://community.openvpn.net/openvpn/wiki/Openvpn24ManPage), which references all the options.
+**A:** OpenVPNはセキュリティの強化と最先端の暗号への対応を常に考慮していますが、NSAから通信を完全に隠したいならVPNを使用するべきではありません。リスク分析した上でVPN利用の検討を行ってください。
 
 ---
 
-More Q&A in [FAQ.md](FAQ.md).
+**Q:** OpenVPNのドキュメントはありますか？
 
-## One-stop solutions for public cloud
+**A:** はい。[OpenVPNマニュアル](https://community.openvpn.net/openvpn/wiki/Openvpn24ManPage) にすべてのオプションについての説明が記載されています。
 
-Solutions that provision a ready to use OpenVPN server based on this script in one go are available for:
+---
 
-- AWS using Terraform at [`openvpn-terraform-install`](https://github.com/dumrauf/openvpn-terraform-install)
+詳しいQ&Aは [FAQ.md](FAQ.md) を参照してください。
 
-## Contributing / Code formatting
+## AWS向けワンストップ・ソリューション
 
-We use [shellcheck](https://github.com/koalaman/shellcheck) and [shfmt](https://github.com/mvdan/sh) to enforce bash styling guidelines and good practices. They are executed for each commit / PR with GitHub Actions, so you can check the configuration [here](https://github.com/angristan/openvpn-install/blob/master/.github/workflows/push.yml).
+AWSを利用している場合、Terraformを利用した次のスクリプトにより、OpenVPNサーバを一度にプロビジョニングすることができます。
 
-## Security and Encryption
+- [`openvpn-terraform-install`](https://github.com/dumrauf/openvpn-terraform-install)
 
-OpenVPN's default settings are pretty weak regarding encryption. This script aims to improve that.
+## コードフォーマット
 
-OpenVPN 2.4 was a great update regarding encryption. It added support for ECDSA, ECDH, AES GCM, NCP and tls-crypt.
+Bashのコーディング規則に合わせるために、 [shellcheck](https://github.com/koalaman/shellcheck) と [shfmt](https://github.com/mvdan/sh) を利用しています。これらはGitHub Actionsによりコミットされる度に実行されます。
 
-If you want more information about an option mentioned below, head to the [OpenVPN manual](https://community.openvpn.net/openvpn/wiki/Openvpn24ManPage). It is very complete.
+## セキュリティと暗号化
 
-Most of OpenVPN's encryption-related stuff is managed by [Easy-RSA](https://github.com/OpenVPN/easy-rsa). Defaults parameters are in the [vars.example](https://github.com/OpenVPN/easy-rsa/blob/v3.0.6/easyrsa3/vars.example) file.
+OpenVPNの暗号化のデフォルト設定は弱いため、本スクリプトではそれを改善しています。
 
-### Compression
+OpenVPN 2.4では、暗号化に多くのアップデートがなされ、 ECDSA、ECDH、AES GCM、NCP、tls-cryptがサポートされました。オプションの詳細については、 [OpenVPNマニュアル](https://community.openvpn.net/openvpn/wiki/Openvpn24ManPage) を参照してください。
 
-By default, OpenVPN doesn't enable compression. This script provides support for LZ0 and LZ4 (v1/v2) algorithms, the latter being more efficient.
+OpenVPNの暗号化関連の設定のほとんどは、 [Easy-RSA ](https://github.com/OpenVPN/easy-rsa) によって管理されています。 デフォルトのパラメータは [vars.example](https://github.com/OpenVPN/easy-rsa/blob/v3.0.6/easyrsa3/vars.example) にあります。
 
-However, it is discouraged to use compression since it since the [VORACLE attack](https://protonvpn.com/blog/voracle-attack/) makes use of it.
+### 圧縮
 
-### TLS version
+本スクリプトは、LZO及びLZ4 (v1/v2) アルゴリズムをサポートしており、後者の方が圧縮率に優れています。しかし、 [VORACLE攻撃](https://protonvpn.com/blog/voracle-attack/) が圧縮を悪用するため、デフォルトでは圧縮を有効にしておらず、このオプションの有効化は推奨しません。
 
-OpenVPN accepts TLS 1.0 by default, which is nearly [20 years old](https://en.wikipedia.org/wiki/Transport_Layer_Security#TLS_1.0).
+### TLSバージョン
 
-With `tls-version-min 1.2` we enforce TLS 1.2, which the best protocol available currently for OpenVPN.
+OpenVPNはデフォルトでTLS1.0を受け付けます。このバージョンは [20年前](https://en.wikipedia.org/wiki/Transport_Layer_Security#TLS_1.0) に規定された古いものです。
 
-TLS 1.2 is supported since OpenVPN 2.3.3.
+`tls-version-min 1.2` ではTLS1.2以上を受け付けます。TLS1.2は、現在OpenVPNで利用できる最も良いプロトコルであり、OpenVPN 2.3.3以降サポートされています。
 
-### Certificate
+### 証明書
 
-OpenVPN uses an RSA certificate with a 2048 bits key by default.
+OpenVPNはデフォルトで2048ビットのRSA証明書をします。
 
-OpenVPN 2.4 added support for ECDSA. Elliptic curve cryptography is faster, lighter and more secure.
+OpenVPN 2.4ではECDSAのサポートが追加されています。楕円曲線暗号は、より速く、軽く、安全です。
 
-This script provides:
+本スクリプトでは、次のオプションを提供しています。
 
-- ECDSA: `prime256v1`/`secp384r1`/`secp521r1` curves
-- RSA: `2048`/`3072`/`4096` bits keys
+- ECDSA: `prime256v1`/`secp384r1`/`secp521r1` 楕円曲線
+- RSA: `2048`/`3072`/`4096` ビット鍵
 
-It defaults to ECDSA with `prime256v1`.
+デフォルトは、ECDSAの `prime256v1` です。
 
-OpenVPN uses `SHA-256` as the signature hash by default, and so does the script. It provides no other choice as of now.
+OpenVPNはデフォルトの署名ハッシュとして `SHA-256` を使用し、現時点で他の方法は提供されていません。
 
-### Data channel
+### データチャンネル
 
-By default, OpenVPN uses `BF-CBC` as the data channel cipher. Blowfish is an old (1993) and weak algorithm. Even the official OpenVPN documentation admits it.
+デフォルトで、データチャンネルの暗号化に `BF-CBC` を使用します。Blowfishは1993年に開発された古いアルゴリズムで、今では脆弱性があり、OpenVPNの公式ドキュメントもその点を認めています。
 
 > The default is BF-CBC, an abbreviation for Blowfish in Cipher Block Chaining mode.
 >
@@ -238,15 +232,15 @@ By default, OpenVPN uses `BF-CBC` as the data channel cipher. Blowfish is an old
 >
 > OpenVPN's default cipher, BF-CBC, is affected by this attack.
 
-Indeed, AES is today's standard. It's the fastest and more secure cipher available today. [SEED](https://en.wikipedia.org/wiki/SEED) and [Camellia](<https://en.wikipedia.org/wiki/Camellia_(cipher)>) are not vulnerable to date but are slower than AES and relatively less trusted.
+AESはスタンダードな暗号で、現在利用可能な最速かつセキュアな暗号です。[SEED](https://en.wikipedia.org/wiki/SEED) や [Camellia](<https://en.wikipedia.org/wiki/Camellia_(cipher)>) はセキュアですが、AESより速度が遅く、信頼性で劣ります。
 
 > Of the currently supported ciphers, OpenVPN currently recommends using AES-256-CBC or AES-128-CBC. OpenVPN 2.4 and newer will also support GCM. For 2.4+, we recommend using AES-256-GCM or AES-128-GCM.
 
-AES-256 is 40% slower than AES-128, and there isn't any real reason to use a 256 bits key over a 128 bits key with AES. (Source: [1](http://security.stackexchange.com/questions/14068/why-most-people-use-256-bit-encryption-instead-of-128-bit),[2](http://security.stackexchange.com/questions/6141/amount-of-simple-operations-that-is-safely-out-of-reach-for-all-humanity/6149#6149)). Moreover, AES-256 is more vulnerable to [Timing attacks](https://en.wikipedia.org/wiki/Timing_attack).
+AES-256は、AES-128よりも40%遅く、AESで128ビット鍵よりも256ビット鍵を使用する理由はありません（出典: [1](http://security.stackexchange.com/questions/14068/why-most-people-use-256-bit-encryption-instead-of-128-bit), [2](http://security.stackexchange.com/questions/6141/amount-of-simple-operations-that-is-safely-out-of-reach-for-all-humanity/6149#6149)）。さらにAES-256は [タイミング攻撃](https://en.wikipedia.org/wiki/Timing_attack) に弱い欠点があります。
 
-AES-GCM is an [AEAD cipher](https://en.wikipedia.org/wiki/Authenticated_encryption) which means it simultaneously provides confidentiality, integrity, and authenticity assurances on the data.
+AES-GCMは [認証付き暗号](https://en.wikipedia.org/wiki/Authenticated_encryption) の一種であり、データの機密性、完全性、信頼性を保証します。
 
-The script supports the following ciphers:
+本スクリプトでは、次のオプションを提供しています。
 
 - `AES-128-GCM`
 - `AES-192-GCM`
@@ -255,15 +249,15 @@ The script supports the following ciphers:
 - `AES-192-CBC`
 - `AES-256-CBC`
 
-And defaults to `AES-128-GCM`.
+OpenVPNのデフォルトは `AES-128-GCM` です。
 
-OpenVPN 2.4 added a feature called "NCP": _Negotiable Crypto Parameters_. It means you can provide a cipher suite like with HTTPS. It is set to `AES-256-GCM:AES-128-GCM` by default and overrides the `--cipher` parameter when used with an OpenVPN 2.4 client. For the sake of simplicity, the script set both the `--cipher` and `--ncp-cipher` to the cipher chosen above.
+OpenVPN 2.4は、"NCP（_Negotiable Crypto Parameters_）"と呼ばれる機能を追加しました。これは、HTTPSと同様にクライアントにネゴシエート可能な暗号スイートを提供できることを意味しています。デフォルトでは、 `AES-256-GCM:AES-128-GCM` が設定されており、OpenVPN 2.4クライアントを利用すると、 `--cipher`  パラメータは上書きされます。本スクリプトでは簡略化のために、 `--cipher` と `--ncp-cipher` の両方が設定されており、前述の暗号が指定されています。
 
-### Control channel
+### コントロールチャンネル
 
-OpenVPN 2.4 will negotiate the best cipher available by default (e.g ECDHE+AES-256-GCM)
+OpenVPN 2.4では、デフォルトで利用可能な最も良い暗号でネゴシエートします。（例：ECDHE+AES-256-GCM）
 
-The script proposes the following options, depending on the certificate:
+本スクリプトでは、次のオプションを提供しています。
 
 - ECDSA:
   - `TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256`
@@ -272,48 +266,46 @@ The script proposes the following options, depending on the certificate:
   - `TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256`
   - `TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384`
 
-It defaults to `TLS-ECDHE-*-WITH-AES-128-GCM-SHA256`.
+デフォルトは、 `TLS-ECDHE-*-WITH-AES-128-GCM-SHA256` です。
 
-### Diffie-Hellman key exchange
+### DH鍵交換
 
-OpenVPN uses a 2048 bits DH key by default.
+OpenVPNはデフォルトで2048ビットのDH鍵を使用します。
 
-OpenVPN 2.4 added support for ECDH keys. Elliptic curve cryptography is faster, lighter and more secure.
+OpenVPN 2.4 では、ECDH鍵がサポートされました。楕円曲線暗号は、より速く、軽く、安全です。また、従来DH鍵の生成には時間がかかる場合がありましたが、ECDH鍵は一時的に利用されるため生成時間が短いメリットがあります。
 
-Also, generating a classic DH keys can take a long, looong time. ECDH keys are ephemeral: they are generated on-the-fly.
+本スクリプトでは、次のオプションを提供しています。
 
-The script provides the following options:
+- ECDH: `prime256v1`/`secp384r1`/`secp521r1` 楕円曲線
+- DH: `2048`/`3072`/`4096` ビット鍵
 
-- ECDH: `prime256v1`/`secp384r1`/`secp521r1` curves
-- DH: `2048`/`3072`/`4096` bits keys
+デフォルトは、 `prime256v1` です。
 
-It defaults to `prime256v1`.
+### HMACダイジェスト認証アルゴリズム
 
-### HMAC digest algorithm
-
-From the OpenVPN wiki, about `--auth`:
+OpenVPNマニュアルの `--auth` について：
 
 > Authenticate data channel packets and (if enabled) tls-auth control channel packets with HMAC using message digest algorithm alg. (The default is SHA1 ). HMAC is a commonly used message authentication algorithm (MAC) that uses a data string, a secure hash algorithm, and a key, to produce a digital signature.
 >
 > If an AEAD cipher mode (e.g. GCM) is chosen, the specified --auth algorithm is ignored for the data channel, and the authentication method of the AEAD cipher is used instead. Note that alg still specifies the digest used for tls-auth.
 
-The script provides the following choices:
+本スクリプトでは、次のオプションを提供しています。
 
 - `SHA256`
 - `SHA384`
 - `SHA512`
 
-It defaults to `SHA256`.
+デフォルトは、 `SHA256` です。
 
-### `tls-auth` and `tls-crypt`
+### `tls-auth` ＆ `tls-crypt`
 
-From the OpenVPN wiki, about `tls-auth`:
+OpenVPNマニュアルの `tls-auth` について：
 
 > Add an additional layer of HMAC authentication on top of the TLS control channel to mitigate DoS attacks and attacks on the TLS stack.
 >
 > In a nutshell, --tls-auth enables a kind of "HMAC firewall" on OpenVPN's TCP/UDP port, where TLS control channel packets bearing an incorrect HMAC signature can be dropped immediately without response.
 
-About `tls-crypt`:
+`tls-crypt` について：
 
 > Encrypt and authenticate all control channel packets with the key from keyfile. (See --tls-auth for more background.)
 >
@@ -323,18 +315,14 @@ About `tls-crypt`:
 > - makes it harder to identify OpenVPN traffic as such,
 > - provides "poor-man's" post-quantum security, against attackers who will never know the pre-shared key (i.e. no forward secrecy).
 
-So both provide an additional layer of security and mitigate DoS attacks. They aren't used by default by OpenVPN.
+従って、どちらもセキュリティの追加レイヤを提供し、DoS攻撃を軽減することができます。これらはデフォルトでは使用されません。
 
-`tls-crypt` is an OpenVPN 2.4 feature that provides encryption in addition to authentication (unlike `tls-auth`). It is more privacy-friendly.
+`tls-crypt` は認証に加えて暗号化することができ、OpenVPN 2.4から実装された機能です（ `tls-auth` とは異なります）。
 
-The script supports both and uses `tls-crypt` by default.
+本スクリプトでは両方をサポートしており、デフォルトは `tls-crypt` です。
 
-## Say thanks
+## クレジット & ライセンス
 
-You can [say thanks](https://saythanks.io/to/angristan%40pm.me) if you want!
+[貢献者の皆さん](https://github.com/Angristan/OpenVPN-install/graphs/contributors) と オリジナル開発者のNyr氏、及びフォーク元のangristan氏に感謝いたします。
 
-## Credits & Licence
-
-Many thanks to the [contributors](https://github.com/Angristan/OpenVPN-install/graphs/contributors) and Nyr's original work.
-
-This project is under the [MIT Licence](https://raw.githubusercontent.com/Angristan/openvpn-install/master/LICENSE)
+このプロジェクトは [MIT Licence](https://raw.githubusercontent.com/Angristan/openvpn-install/master/LICENSE) の下に公開されています。
